@@ -8,7 +8,7 @@ target_compile_features(BasicBlockTracePass PRIVATE cxx_range_for cxx_auto_type)
 
 # LLVM is (typically) built with no C++ RTTI. We need to match that.
 set_target_properties(BasicBlockTracePass PROPERTIES
-    COMPILE_FLAGS "-fno-rtti -march=i586"
+    COMPILE_FLAGS "-fno-rtti"
 )
 
 # Get proper shared-library behavior (where symbols are not necessarily
