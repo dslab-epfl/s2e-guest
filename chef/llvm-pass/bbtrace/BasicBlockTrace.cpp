@@ -67,14 +67,20 @@ BBTraceLoopNesting("bb-trace-loop-nesting",
         cl::desc("Instrument loop nesting by adjusting BB topological indices"),
         cl::init(false));
 
+namespace llvm {
+void initializeBasicBlockTracePass(PassRegistry&);
+}
+
 
 namespace {
 
-class BasicBlockTracePass : public FunctionPass {
+class BasicBlockTrace : public FunctionPass {
 public:
     static char ID;
 
-    BasicBlockTracePass() : FunctionPass(ID) { }
+    BasicBlockTrace() : FunctionPass(ID) {
+        initializeBasicBlockTracePass(*PassRegistry::getPassRegistry());
+    }
 
     virtual void getAnalysisUsage(AnalysisUsage &AU) const {
         AU.addRequired<LoopInfo>();
@@ -88,7 +94,13 @@ public:
 
 }
 
-char BasicBlockTracePass::ID = 0;
+char BasicBlockTrace::ID = 0;
+
+INITIALIZE_PASS_BEGIN(BasicBlockTrace, "bb-trace", "Basic block tracing",
+        false, false)
+INITIALIZE_PASS_DEPENDENCY(LoopInfo)
+INITIALIZE_PASS_END(BasicBlockTrace, "bb-trace", "Basic block tracing",
+        false, false)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,7 +277,7 @@ static void instrumentLoopsInFunction(Function &F, LoopInfo &LI) {
 // BasicBlockTrace /////////////////////////////////////////////////////////////
 
 
-bool BasicBlockTracePass::runOnFunction(Function &F) {
+bool BasicBlockTrace::runOnFunction(Function &F) {
     LoopInfo &LI = getAnalysis<LoopInfo>();
 
     if (BBTraceLoopNesting) {
@@ -282,7 +294,7 @@ bool BasicBlockTracePass::runOnFunction(Function &F) {
 // http://adriansampson.net/blog/clangpass.html
 static void registerBasicBlockTracePass(const PassManagerBuilder &,
                          legacy::PassManagerBase &PM) {
-  PM.add(new BasicBlockTracePass());
+  PM.add(new BasicBlockTrace());
 }
 
 static RegisterStandardPasses
