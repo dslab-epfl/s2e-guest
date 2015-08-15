@@ -12,6 +12,7 @@ if [ ! -d ${BUILD_DIR} ]; then
     mkdir -p ${BUILD_DIR}
 
     pushd ${BUILD_DIR}
+    # TODO: LLVM_DIR might not be needed if clang is on $PATH
     cmake \
 	-DLLVM_DIR=${LLVM_DIR}/share/llvm/cmake/ \
 	-DCMAKE_CXX_FLAGS="-march=i586" ..
