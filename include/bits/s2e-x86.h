@@ -270,9 +270,12 @@ static inline int s2e_is_symbolic(const void *ptr, size_t size)
 {
     int result;
     __s2e_touch_buffer((char*)ptr, 1);
+    // Since the S2E custom instruction is NOP in non-S2E mode, it is important
+    // to explicitly initialize the return register "a" to zero before invoking
+    // the instruction.
     __asm__ __volatile__(
         S2E_INSTRUCTION_SIMPLE(04)
-        : "=a" (result) : "a" (size), "c" (ptr)
+        : "=a" (result) : "c" (ptr), "d" (size), "a" (0)
     );
     return result;
 }
