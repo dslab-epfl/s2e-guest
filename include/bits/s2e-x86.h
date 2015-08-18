@@ -593,8 +593,7 @@ typedef struct {
     uint32_t dataSize;
 } __attribute__((packed)) syscall_t;
 
-
-static inline int s2e_system_call(const char *pluginName,
+static inline int s2e_plugin_call(const char *pluginName,
         uint32_t id, volatile void *data, uint32_t dataSize) {
     syscall_t syscall;
     syscall.id = id;
@@ -609,7 +608,7 @@ static inline int s2e_system_call(const char *pluginName,
     return __raw_invoke_plugin(pluginName, &syscall, sizeof(syscall));
 }
 
-static inline int s2e_system_call_concrete(const char *pluginName,
+static inline int s2e_plugin_call_concrete(const char *pluginName,
         uint32_t id, volatile void *data, uint32_t dataSize) {
     syscall_t syscall;
     syscall.id = id;
@@ -622,6 +621,22 @@ static inline int s2e_system_call_concrete(const char *pluginName,
     }
 
     return __raw_invoke_plugin_concrete(pluginName, &syscall, sizeof(syscall));
+}
+
+
+static inline int s2e_system_call(unsigned int id, void *data, unsigned int size) {
+    int result = -1;
+
+    if (data) {
+        __s2e_touch_buffer((char*)data, size);
+    }
+
+    __asm__ __volatile__ (
+            S2E_INSTRUCTION_SIMPLE(B0)
+            : "=a" (result) : "a" (id), "c" (data), "d" (size) : "memory"
+    );
+
+    return result;
 }
 
 
